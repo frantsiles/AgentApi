@@ -1,0 +1,132 @@
+### Agent API HTTP calls
+### Environment variables (you can override in Rider/VS Code Rest Client)
+@host = http://localhost:5000
+@apiKey = ZCjpWHPl2iD2aZ0OsRUfNE3CUE0LjmT2
+
+### Health
+GET {{host}}/health
+X-API-Key: {{apiKey}}
+
+### Plan
+POST {{host}}/plan
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "goal": "Explorar proyecto y listar archivos de src/Agent.Api",
+  "context": { "note": "demo" }
+}
+
+### Act (enqueue steps)
+# After posting, copy the returned id into the Jobs request below
+POST {{host}}/act
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "steps": [
+    {
+      "tool": "filereader-list",
+      "payload": { "path": "src/Agent.Api", "recursive": true, "includeContent": false },
+      "description": "List files under src/Agent.Api"
+    },
+    {
+      "tool": "pwsh-run",
+      "payload": { "command": "dotnet --info", "timeoutSeconds": 30 },
+      "description": "Show .NET info"
+    }
+  ]
+}
+
+### Job status (replace {id} with the id returned by /act)
+GET {{host}}/jobs/e15587756a5043a4a82c234a14bd0b66
+X-API-Key: {{apiKey}}
+
+### Tools: filereader-list
+POST {{host}}/tools/filereader-list/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "path": "src/Agent.Api",
+  "recursive": true,
+  "includeContent": false,
+  "ignore": ["bin", "obj"]
+}
+
+### Tools: filereader-tree
+# Returns a directory tree from Agent.RootPath (configure via appsettings or Agent__RootPath)
+POST {{host}}/tools/filereader-tree/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "path": "",
+  "maxDepth": 2,
+  "includeFiles": true,
+  "includeSizes": false,
+  "ignore": ["bin", "obj", ".git"]
+}
+
+### Tools: filewriter-applypatch
+POST {{host}}/tools/filewriter-applypatch/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "operations": [
+    { "op": "write",  "path": "temp/example.txt", "content": "hello world" },
+    { "op": "append", "path": "temp/example.txt", "content": "\nmore text" }
+  ]
+}
+
+### Tools: pwsh-run (only allowlisted commands will run)
+POST {{host}}/tools/pwsh-run/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "command": "dotnet --info",
+  "timeoutSeconds": 30
+}
+
+### Tools: git diff
+POST {{host}}/tools/git/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "op": "diff"
+}
+
+### Tools: git commit
+POST {{host}}/tools/git/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "op": "commit",
+  "message": "chore: demo commit from .http"
+}
+
+### Tools: git branch
+POST {{host}}/tools/git/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "op": "branch",
+  "name": "agent-demo"
+}
+
+### Chat
+POST {{host}}/chat
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "messages": [
+    { "role": "system", "content": "You are a helpful assistant." },
+    { "role": "user",   "content": "Say hi" }
+  ]
+}

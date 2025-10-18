@@ -1,0 +1,27 @@
+### Storybook runner via Agent API
+### Environment variables (override as needed)
+@host = http://localhost:5000
+@apiKey = ZCjpWHPl2iD2aZ0OsRUfNE3CUE0LjmT2
+@projectPath = C:/Users/pachi/Documents/GitHub/GrupoINS_UI_Kit_React
+
+### PRECONDICIONES
+# - Debes tener Node.js y npm instalados en el sistema donde corre la API.
+# - El package.json del proyecto debe tener el script "storybook" definido.
+# - En appsettings.json, PowerShell.AllowedCommands debe incluir Set-Location y npm.
+#   (Este repo ya los incluye por defecto.)
+
+### Ejecutar: cd al proyecto y correr `npm run storybook`
+POST {{host}}/tools/pwsh-run/invoke
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "command": "Set-Location '{{projectPath}}'; npm run storybook",
+  "timeoutSeconds": 600,
+  "waitForExit": false
+}
+
+### Notas
+# - timeoutSeconds se fijó en 600 (10 min) porque el arranque de Storybook puede tardar.
+# - Si necesitas ver logs en tiempo real, recuerda que este endpoint devuelve stdout/stderr al finalizar.
+# - Asegúrate de que el puerto que use Storybook no esté ocupado. Por defecto suele ser 6006.
